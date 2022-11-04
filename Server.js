@@ -5,7 +5,7 @@ csvSplitStream
   .split(
     fs.createReadStream("MOCK_DATA.csv"),
     {
-      lineLimit: 100,
+      lineLimit: 10000,
     },
     (index) => fs.createWriteStream(`output-${index}.csv`)
   )
