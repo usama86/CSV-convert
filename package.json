@@ -11,6 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "csv-split-stream": "^1.0.2"
+    "csv-split-stream": "^1.0.2",
+    "follow-redirect-url": "^2.0.1",
+    "read-excel-file": "^5.5.3",
+    "write-excel-file": "^1.4.14"
   }
 }
