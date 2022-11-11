@@ -6,8 +6,8 @@ const writeXlsxFile = require("write-excel-file/node");
 const { parse } = require("csv-parse");
 const fs = require("fs");
 
-const totalNumberOfUrl = 1408;
-const fileToRead = "cities_urls.csv";
+const totalNumberOfUrl = 4999;
+const fileToRead = "all_areas_with_subtype.csv";
 
 const schema = [
   {
@@ -45,7 +45,7 @@ const splitCSVFunction = (fileName) => {
     .split(
       fs.createReadStream(fileName),
       {
-        lineLimit: 1000,
+        lineLimit: 4999,
       },
       (index) => {
         return fs.createWriteStream(`output/output-${index}.csv`);
@@ -78,113 +78,115 @@ const output = (iterator) => `output/output-${iterator}.csv`;
 const makeFilesCSV = splitCSVFunction(fileToRead).then(async (makeFilesCSV) => {
   const UrlRedirectArr = [];
   if (makeFilesCSV) {
-    for (let i = 0; i < makeFilesCSV.totalChunks; i++) {
-      // let x = ;
-      // console.log(x);
-      // if (i === makeFilesCSV.totalChunks) {
-      //   console.log("finished");
-      //   console.log("HI");
-      //   console.log(UrlRedirectArr);
-      //   await writeXlsxFile(UrlRedirectArr, {
-      //     schema, // (optional) column widths, etc.
-      //     filePath: "output/file.csv",
-      //   });
-      //   return;
-      // }
+    // for (let i = 0; i < makeFilesCSV.totalChunks; i++) {
+    // let x = ;
+    // console.log(x);
+    // if (i === makeFilesCSV.totalChunks) {
+    //   console.log("finished");
+    //   console.log("HI");
+    //   console.log(UrlRedirectArr);
+    //   await writeXlsxFile(UrlRedirectArr, {
+    //     schema, // (optional) column widths, etc.
+    //     filePath: "output/file.csv",
+    //   });
+    //   return;
+    // }
 
-      fs.createReadStream(output(i))
-        .pipe(parse({ delimiter: ",", from_line: 1 }))
-        .on("data", function (row) {
-          const options = {
-            // max_redirect_length: 5,
-            request_timeout: 100000,
-            ignoreSsslErrors: true,
-          };
+    fs.createReadStream("output/output-0.csv")
+      .pipe(parse({ delimiter: ",", from_line: 1 }))
+      .on("data", function (row) {
+        const options = {
+          // max_redirect_length: 5,
+          request_timeout: 100000,
+          ignoreSsslErrors: true,
+        };
 
-          followRedirect
-            .startFollowing(row[0], options)
-            .then(async (urls) => {
-              // console.log(urls);
-              if (urls[0].url === "url") return;
+        followRedirect
+          .startFollowing(row[0], options)
+          .then(async (urls) => {
+            // console.log(urls);
+            if (urls[0].url === "url") return;
 
-              let getStatus = JSON.stringify([...urls.map((el) => el.status)]);
-              // if data coming error, let's try to resend it
+            console.log(UrlRedirectArr.length);
 
-              if (getStatus.includes("Error")) {
-                console.log("GOT YAAA");
-                followRedirect
-                  .startFollowing(row[0], options)
-                  .then(async (urls) => {
-                    const copy = {
-                      url: urls[0].url,
-                      redirect: urls[urls.length - 1].redirect,
-                      status: JSON.stringify([...urls.map((el) => el.status)]),
-                      Hops: urls.reduce((acc, cur) => {
-                        if (cur.status === 301) {
-                          return (acc += 1);
-                        }
-                        return acc;
-                      }, 0),
-                      redirectedUrl: urls[urls.length - 1].url,
-                    };
-                    // console.log(copy);
-                    UrlRedirectArr.push(copy);
+            let getStatus = JSON.stringify([...urls.map((el) => el.status)]);
+            // if data coming error, let's try to resend it
 
-                    console.log(UrlRedirectArr.length);
+            if (getStatus.includes("Error")) {
+              console.log("GOT YAAA");
+              // followRedirect
+              //   .startFollowing(row[0], options)
+              //   .then(async (urls) => {
+              //     const copy = {
+              //       url: urls[0].url,
+              //       redirect: urls[urls.length - 1].redirect,
+              //       status: JSON.stringify([...urls.map((el) => el.status)]),
+              //       Hops: urls.reduce((acc, cur) => {
+              //         if (cur.status === 301) {
+              //           return (acc += 1);
+              //         }
+              //         return acc;
+              //       }, 0),
+              //       redirectedUrl: urls[urls.length - 1].url,
+              //     };
+              //     // console.log(copy);
+              //     UrlRedirectArr.push(copy);
 
-                    if (UrlRedirectArr.length === totalNumberOfUrl) {
-                      /// NEED TO ADD
-                      await writeXlsxFile(UrlRedirectArr, {
-                        schema, // (optional) column widths, etc.
-                        filePath: "output/file.csv",
-                      });
-                    }
-                  });
-              } else {
-                const copy = {
-                  url: urls[0].url,
-                  redirect: urls[urls.length - 1].redirect,
-                  status: JSON.stringify([...urls.map((el) => el.status)]),
-                  Hops: urls.reduce((acc, cur) => {
-                    if (cur.status === 301) {
-                      return (acc += 1);
-                    }
-                    return acc;
-                  }, 0),
-                  redirectedUrl: urls[urls.length - 1].url,
-                };
-                // console.log(copy);
-                UrlRedirectArr.push(copy);
+              //     console.log(UrlRedirectArr.length);
 
-                console.log(UrlRedirectArr.length);
-
-                if (UrlRedirectArr.length === totalNumberOfUrl) {
-                  /// NEED TO ADD
-                  await writeXlsxFile(UrlRedirectArr, {
-                    schema, // (optional) column widths, etc.
-                    filePath: "output/file.csv",
-                  });
-                }
+              if (UrlRedirectArr.length === totalNumberOfUrl) {
+                /// NEED TO ADD
+                await writeXlsxFile(UrlRedirectArr, {
+                  schema, // (optional) column widths, etc.
+                  filePath: "output/file.csv",
+                });
               }
-            })
-            .catch((error) => {
-              console.log("YO");
-              console.log(error);
-            });
-        })
-        .on("end", async function () {
-          // console.log("finished");
-          // console.log("HI");
-          // console.log(UrlRedirectArr);
-          // await writeXlsxFile(UrlRedirectArr, {
-          //   schema, // (optional) column widths, etc.
-          //   filePath: "output/file.csv",
-          // });
-        })
-        .on("error", function (error) {
-          console.log(error.message);
-        });
-    }
+              // });
+            } else {
+              const copy = {
+                url: urls[0].url,
+                redirect: urls[urls.length - 1].redirect,
+                status: JSON.stringify([...urls.map((el) => el.status)]),
+                Hops: urls.reduce((acc, cur) => {
+                  if (cur.status === 301) {
+                    return (acc += 1);
+                  }
+                  return acc;
+                }, 0),
+                redirectedUrl: urls[urls.length - 1].url,
+              };
+              // console.log(copy);
+              UrlRedirectArr.push(copy);
+
+              console.log(UrlRedirectArr.length);
+
+              if (UrlRedirectArr.length === totalNumberOfUrl) {
+                /// NEED TO ADD
+                await writeXlsxFile(UrlRedirectArr, {
+                  schema, // (optional) column widths, etc.
+                  filePath: "output/file.csv",
+                });
+              }
+            }
+          })
+          .catch((error) => {
+            console.log("YO");
+            console.log(error);
+          });
+      })
+      .on("end", async function () {
+        // console.log("finished");
+        // console.log("HI");
+        // console.log(UrlRedirectArr);
+        // await writeXlsxFile(UrlRedirectArr, {
+        //   schema, // (optional) column widths, etc.
+        //   filePath: "output/file.csv",
+        // });
+      })
+      .on("error", function (error) {
+        console.log(error.message);
+      });
+    // }
   }
 
   // console.log(makeFilesCSV);
