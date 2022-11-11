@@ -45,7 +45,7 @@ const output = (iterator) => `output/output-${iterator}.csv`;
 const UrlRedirectArr = [];
 const UrlFailArr = [];
 
-fs.createReadStream("output/output-0.csv")
+fs.createReadStream("output/output-2.csv")
   .pipe(parse({ delimiter: ",", from_line: 1 }))
   .on("data", function (row) {
     try {
@@ -85,7 +85,7 @@ function redirectFunction(row) {
             redirectedUrl: urls[urls.length - 1].url,
           };
           // console.log(copy);
-          if ((UrlRedirectArr.length + UrlFailArr.length) % 1000 === 0) {
+          if ((UrlRedirectArr.length + UrlFailArr.length) % 900 === 0) {
             /// NEED TO ADD
             printCSVFile();
           }
@@ -106,7 +106,7 @@ function redirectFunction(row) {
           // console.log(copy);
           UrlRedirectArr.push(copy);
 
-          if ((UrlRedirectArr.length + UrlFailArr.length) % 1000 === 0) {
+          if ((UrlRedirectArr.length + UrlFailArr.length) % 900 === 0) {
             /// NEED TO ADD
             printCSVFile();
           }
@@ -125,10 +125,10 @@ function redirectFunction(row) {
 async function printCSVFile() {
   await writeXlsxFile(UrlRedirectArr, {
     schema, // (optional) column widths, etc.
-    filePath: "output/file2.csv",
+    filePath: "output/file5.csv",
   });
   await writeXlsxFile(UrlFailArr, {
     schema, // (optional) column widths, etc.
-    filePath: "output/file3.csv",
+    filePath: "output/file6.csv",
   });
 }
