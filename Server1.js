@@ -9,6 +9,8 @@ const fs = require("fs");
 const totalNumberOfUrl = 4999;
 const fileToRead = "all_areas_with_subtype.csv";
 const printLength = 4980;
+let errCounter = 0;
+const MAX_COUNT = 10;
 
 const schema = [
   {
@@ -72,6 +74,11 @@ function redirectFunction(row) {
 
         // if data coming error, let's try to resend it
         if (getStatus.includes("Error")) {
+          if(errCounter < MAX_COUNT) {
+            redirectFunction(row);
+            errCounter++;
+          }
+          errCounter = 0;
           const copy = {
             url: urls[0].url,
             redirect: urls[urls.length - 1].redirect,
@@ -91,6 +98,7 @@ function redirectFunction(row) {
           }
           UrlFailArr.push(copy);
         } else {
+          errCounter = 0;
           const copy = {
             url: urls[0].url,
             redirect: urls[urls.length - 1].redirect,
